@@ -25,28 +25,28 @@ def receive():
                 msg_list.insert(tkinter.END, msg)
                 print(msg)
 
-        except OSError:  # Possibly client has left the chat.
+        except OSError: 
             break
 
 
-def send_name(event=None):  # event is passed by binders.
+def send_name(event=None): 
     """Handles sending of messages."""
     msg = my_name.get()
     print(msg)
     client_socket.send(bytes(msg, "utf8"))
 
 
-def send(event=None):  # event is passed by binders.
+def send(event=None): 
     """Handles sending of messages."""
     if my_destinatario.get() != "" and my_msg.get() != "":
         msg = "@" + my_destinatario.get() + "@" + my_assunto.get() + "@" + my_msg.get()
-        my_destinatario.set("")  # Clears input field.
+        my_destinatario.set("") 
         my_assunto.set("")
-        my_msg.set("")  # Clears input field.
+        my_msg.set("") 
         client_socket.send(bytes(msg, "utf8"))
 
 
-def sair(event=None):  # event is passed by binders.
+def sair(event=None): 
     """Encerrar a conexão"""
     msg = "{quit}"
     client_socket.send(bytes(msg, "utf8"))
