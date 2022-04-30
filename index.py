@@ -1,60 +1,60 @@
-import threading
-import socket
-
-host = input('Digite o número do servidor que irá hostear a conexão do chat: ')
-porta = int(input('Porta do servidor: '))
-
-servidor = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-servidor.bind((host, int(porta)))
-servidor.listen()
-
-usuarios = []
-nicknames = []
+"""Server for multithreaded (asynchronous) chat application."""
+from socket import AF_INET, socket, SOCK_STREAM
+from threading import Thread
 
 
-def transmissao(mensagem):
-    for usuario in usuarios:
-        usuario.send(mensagem)
+def initial():
+    """Sets up handling for incoming clients."""
+    while True:
+        client, endereco = SERVER.accept()
+        print("%s:%s está online." % endereco)
+        client.send(bytes("Qual o seu nome ?", "utf8"))
+        addresses[client] = endereco
+        Thread(target=handle, args=(client,)).start()
 
 
-def handle(usuario):
+def handle(client):
+    name = client.recv(BUFSIZ).decode("utf8")
+    welcome = "Bem vindo "
+    client.send(bytes(welcome + name + "!", "utf8"))
+    client.send(bytes("Agora você poderá enviar mensagens !", "utf8"))
+    msg = "%s entrou no chat!" % name
+    transmissao(bytes(msg, "utf8"))
+    clients[client] = name
+
     while True:
         try:
-            mensagem = usuario.recv(1024)
-            print(usuarios)
-            transmissao(mensagem)
+            msg = client.recv(BUFSIZ)
+            transmissao(msg, name + "")
         except:
-            index = usuarios.index(usuario)
-            usuarios.remove(index)
-            usuarios.close()
-            nickname = nicknames[index]
-            transmissao(f'O Usuário {nickname} deixou o chat.'.encode('utf-8'))
-            nicknames.remove(nickname)
-            print(f"Usuários Ativos no momento: {nicknames}".encode('utf-8'))
+            client.close()
+            del clients[client]
+            transmissao(bytes("%s saiu do chat" % name, "utf8"))
             break
 
 
-def recebendo():
-    while True:
-        try:
-            usuario, endereco = servidor.accept()
-            print(f"Conectado com {str(endereco)}")
-
-            usuario.send('NICK'.encode('utf-8'))
-            nickname = usuario.recv(1024).decode('utf-8')
-            nicknames.append(nickname)
-            usuarios.append(usuario)
-
-            print(f"O Nickname do usuário é {nickname}")
-            transmissao(f'O Usuário {nickname} entrou no chat.'.encode('utf-8'))
-            usuario.send("\nConectado ao servidor".encode('utf-8'))
-
-            thread = threading.Thread(target=handle, args=(usuario,))
-            thread.start()
-        except:
-            print("Ocorreu erro no servidor. Por favor reiniciar")
-            break
+def transmissao(msg, prefix=""):
+    if prefix != "":
+        prefix = prefix + ": "
+    for sock in clients:
+        sock.send(bytes(prefix, "utf8") + msg)
 
 
-print('Iniciando o chat TCP/IP')
-recebendo()
+clients = {}
+addresses = {}
+
+HOST = "26.177.236.7"
+PORT = 55555
+BUFSIZ = 1024
+ADDR = (HOST, PORT)
+
+SERVER = socket(AF_INET, SOCK_STREAM)
+SERVER.bind(ADDR)
+
+if __name__ == "__main__":
+    SERVER.listen(5)
+    print("Aguardando conexões...")
+    ACCEPT_THREAD = Thread(target=initial)
+    ACCEPT_THREAD.start()
+    ACCEPT_THREAD.join()
+SERVER.close()
