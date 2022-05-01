@@ -1,14 +1,9 @@
-import threading
+# Importando as bibliotecas
 import socket
 from threading import Thread
 from tkinter import *
 
-# Variaveis de uso TKINTER
-defaultFont = ("Roboto", "16", "bold")
-secondaryFont = ("Roboto", "14")
-bg1 = "#DCDCDC"
-bg2 = "#2F4F4F"
-
+# Faz a conexão manual do Usuário com o Servidor
 HOST = "26.177.236.7"
 PORT = 55555
 if not PORT:
@@ -22,6 +17,9 @@ ADDR = (HOST, PORT)
 usuario = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 usuario.connect(ADDR)
 
+
+# Funções
+# Função receber: fica de olho quando o servidor retorna mensagens para os usuários.
 def receber():
     while True:
         try:
@@ -31,6 +29,7 @@ def receber():
             break
 
 
+# Função enviar: envia a mensagem do usuário ao servidor.
 def enviar():
     mensagem = message.get()
     message.set("")
@@ -40,20 +39,28 @@ def enviar():
         msg_list.insert(END, "A Mensagem deve estar preenchida")
 
 
+# Função quit: quando o usuário clicar em fechar a janela. Ele desliga a conexão do usuário com o servidor.
 def quit(event=None):
     usuario.close()
     janela.quit()
 
 
-# Iniciando a Janela
+# Variaveis de uso TKINTER
+# Setando fontes, e cores
+defaultFont = ("Roboto", "16", "bold")
+secondaryFont = ("Roboto", "14")
+bg1 = "#DCDCDC"
+bg2 = "#2F4F4F"
+
+# Iniciando a Janela e setando os labels, inputs e grids
 janela = Tk()
 
-# Configurações
+# Configurações da janela
 janela.title('Chat Python Socket')
 janela.configure(bg=bg1)
 janela.protocol("WM_DELETE_WINDOW", quit)
 
-# Variaveis
+# Variaveis da Janela
 message = StringVar()
 messages_frame = Frame(janela)
 scrollbar = Scrollbar(messages_frame)

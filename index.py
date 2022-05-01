@@ -1,10 +1,10 @@
-"""Server for multithreaded (asynchronous) chat application."""
+# Importando as bibliotecas
 from socket import AF_INET, socket, SOCK_STREAM
 from threading import Thread
 
-
-def initial():
-    """Sets up handling for incoming clients."""
+# Funções
+# Função inicial: Fica sempre de olho se há alguém novo conectando ao servidor.
+def inicial():
     while True:
         client, endereco = SERVER.accept()
         print("%s:%s está online." % endereco)
@@ -13,6 +13,7 @@ def initial():
         Thread(target=handle, args=(client,)).start()
 
 
+# Função handle: Verifica o nome do usuário para dar boas vindas. Caso não seja boas vindas, a função ficará de olho para verificar se o usuário enviou uma mensagem ou se ele se desconectou
 def handle(client):
     name = client.recv(BUFSIZ).decode("utf8")
     welcome = "Bem vindo "
@@ -33,6 +34,7 @@ def handle(client):
             break
 
 
+# Função transmissão: envia a mensagem para todos os usuários ativos no momento.
 def transmissao(msg, prefix=""):
     if prefix != "":
         prefix = prefix + ": "
@@ -43,6 +45,8 @@ def transmissao(msg, prefix=""):
 clients = {}
 addresses = {}
 
+
+# Faz a criação do servidor e inicia a função inicial usando thread
 HOST = "26.177.236.7"
 PORT = 55555
 BUFSIZ = 1024
@@ -54,7 +58,7 @@ SERVER.bind(ADDR)
 if __name__ == "__main__":
     SERVER.listen(5)
     print("Aguardando conexões...")
-    ACCEPT_THREAD = Thread(target=initial)
+    ACCEPT_THREAD = Thread(target=inicial)
     ACCEPT_THREAD.start()
     ACCEPT_THREAD.join()
 SERVER.close()
