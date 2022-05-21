@@ -4,15 +4,10 @@ from threading import Thread
 from tkinter import *
 
 # Faz a conexão manual do Usuário com o Servidor
-HOST = "26.177.236.7"
-PORT = 55555
-if not PORT:
-    PORT = 55555
-else:
-    PORT = int(PORT)
+HOST = "127.0.0.1"
+PORTA = 59999
 
-BUFSIZ = 1024
-ADDR = (HOST, PORT)
+ADDR = (HOST, int(PORTA))
 
 usuario = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 usuario.connect(ADDR)
@@ -23,8 +18,8 @@ usuario.connect(ADDR)
 def receber():
     while True:
         try:
-            mensagem = usuario.recv(BUFSIZ).decode('utf-8')
-            msg_list.insert(END, mensagem)
+            mensagem = usuario.recv(1024).decode('utf-8')
+            chat.insert(END, mensagem)
         except:
             break
 
@@ -36,7 +31,7 @@ def enviar():
     if mensagem != "":
         usuario.send(bytes(mensagem, "utf8"))
     else:
-        msg_list.insert(END, "A Mensagem deve estar preenchida")
+        chat.insert(END, "A Mensagem deve estar preenchida")
 
 
 # Função quit: quando o usuário clicar em fechar a janela. Ele desliga a conexão do usuário com o servidor.
@@ -47,8 +42,7 @@ def quit(event=None):
 
 # Variaveis de uso TKINTER
 # Setando fontes, e cores
-defaultFont = ("Roboto", "16", "bold")
-secondaryFont = ("Roboto", "14")
+fontePrimaria = ("Roboto", "14")
 bg1 = "#DCDCDC"
 bg2 = "#2F4F4F"
 
@@ -66,19 +60,19 @@ messages_frame = Frame(janela)
 scrollbar = Scrollbar(messages_frame)
 
 # Box de Mensagens
-msg_list = Listbox(janela, height=11, width=38, font=secondaryFont, fg=bg2, border=2, relief="groove", yscrollcommand=scrollbar.set)
+chat = Listbox(janela, height=11, width=38, font=fontePrimaria, fg=bg2, border=2, relief="groove", yscrollcommand=scrollbar.set)
 
 # Inputs
-input_message = Entry(janela, width=22, font=secondaryFont, fg=bg2, border=2, relief="groove", textvariable=message)
+input_message = Entry(janela, width=22, font=fontePrimaria, fg=bg2, border=2, relief="groove", textvariable=message)
 input_message.bind("<Return>", )
 
 # Botões
-button_send = Button(janela, text="Enviar", font=secondaryFont, fg=bg2, border=2, relief="groove", command=enviar)
+button_send = Button(janela, text="Enviar", font=fontePrimaria, fg=bg2, border=2, relief="groove", command=enviar)
 
 # Grids
 scrollbar.grid()
 messages_frame.grid()
-msg_list.grid(row=1, column=1, columnspan=2)
+chat.grid(row=1, column=1, columnspan=2)
 
 input_message.grid(row=2, column=1, sticky="w")
 button_send.grid(row=2, column=2, sticky="n")

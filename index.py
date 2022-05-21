@@ -6,59 +6,55 @@ from threading import Thread
 # Função inicial: Fica sempre de olho se há alguém novo conectando ao servidor.
 def inicial():
     while True:
-        client, endereco = SERVER.accept()
-        print("%s:%s está online." % endereco)
+        client, endereco = SERVIDOR.accept()
+        print("%s:%s se conectou ao chat." % endereco)
         client.send(bytes("Qual o seu nome ?", "utf8"))
-        addresses[client] = endereco
+        enderecos[client] = endereco
         Thread(target=handle, args=(client,)).start()
 
 
 # Função handle: Verifica o nome do usuário para dar boas vindas. Caso não seja boas vindas, a função ficará de olho para verificar se o usuário enviou uma mensagem ou se ele se desconectou
 def handle(client):
-    name = client.recv(BUFSIZ).decode("utf8")
-    welcome = "Bem vindo "
-    client.send(bytes(welcome + name + "!", "utf8"))
+    nome_cliente = client.recv(1024).decode("utf8")
+    client.send(bytes("Bem vindo " + nome_cliente + "!", "utf8"))
     client.send(bytes("Agora você poderá enviar mensagens !", "utf8"))
-    msg = "%s entrou no chat!" % name
-    transmissao(bytes(msg, "utf8"))
-    clients[client] = name
+    mensagem = "%s entrou no chat!" % nome_cliente
+    transmissao(bytes(mensagem, "utf8"))
+    clientes[client] = nome_cliente
 
     while True:
         try:
-            msg = client.recv(BUFSIZ)
-            transmissao(msg, name + "")
+            mensagem = client.recv(1024)
+            transmissao(mensagem, nome_cliente + "")
         except:
             client.close()
-            del clients[client]
-            transmissao(bytes("%s saiu do chat" % name, "utf8"))
+            del clientes[client]
+            transmissao(bytes("%s saiu do chat" % nome_cliente, "utf8"))
             break
 
 
 # Função transmissão: envia a mensagem para todos os usuários ativos no momento.
-def transmissao(msg, prefix=""):
-    if prefix != "":
-        prefix = prefix + ": "
-    for sock in clients:
-        sock.send(bytes(prefix, "utf8") + msg)
+def transmissao(mensagem, prefixo=""):
+    if prefixo != "":
+        prefixo = prefixo + ": "
+    for sock in clientes:
+        sock.send(bytes(prefixo, "utf8") + mensagem)
 
-
-clients = {}
-addresses = {}
-
+clientes = {}
+enderecos = {}
 
 # Faz a criação do servidor e inicia a função inicial usando thread
-HOST = "26.177.236.7"
-PORT = 55555
-BUFSIZ = 1024
-ADDR = (HOST, PORT)
+HOST = "127.0.0.1"
+PORTA = 59999
+ENDERECO = (HOST, int(PORTA))
 
-SERVER = socket(AF_INET, SOCK_STREAM)
-SERVER.bind(ADDR)
+SERVIDOR = socket(AF_INET, SOCK_STREAM)
+SERVIDOR.bind(ENDERECO)
 
 if __name__ == "__main__":
-    SERVER.listen(5)
-    print("Aguardando conexões...")
+    SERVIDOR.listen(5)
+    print("Aguardando novas conexões...")
     ACCEPT_THREAD = Thread(target=inicial)
     ACCEPT_THREAD.start()
     ACCEPT_THREAD.join()
-SERVER.close()
+SERVIDOR.close()
